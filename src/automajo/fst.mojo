@@ -194,15 +194,3 @@ struct Fst:
         
         self.states[id].final_weight = weight
     
-
-
-
-fn main():
-    var fst = Fst()
-    fst.start = fst.add_state()
-    fst.add_states(2)
-    fst.add_arc(0, Arc(99, 99, Weight(1.23), 1))
-    fst.add_arc(0, Arc(88, 88, Weight(4.56), 2))
-    fst.set_final(1, Weight(7.89))
-    fst.set_final(2, Weight(9.87))
-    print(str(fst))
