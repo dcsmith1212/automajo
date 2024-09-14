@@ -1,4 +1,4 @@
-from fst import Weight
+from automajo.fst import Weight
 from testing import assert_equal, assert_almost_equal
 
 def test_weight_arithmetic():
