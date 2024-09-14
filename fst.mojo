@@ -61,8 +61,10 @@ struct Arc:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return 'Arc(ilabel=' + str(self.ilabel) + ', olabel=' + str(self.olabel) +
-               ', weight=' + str(self.weight) + ', nextstate=' + str(self.nextstate) + ')'
+        # return 'Arc(ilabel=' + str(self.ilabel) + ', olabel=' + str(self.olabel) +
+        #        ', weight=' + str(self.weight) + ', nextstate=' + str(self.nextstate) + ')'
+        return '--- ' + str(self.ilabel) + ':' + str(self.olabel) + 
+               ' [' + str(self.weight.value) + '] ---> ' + str(self.nextstate)
     
     fn __repr__(self) -> String:
         return self.__str__()
@@ -107,12 +109,12 @@ struct State:
         return not self.__eq__(other)
     
     fn __str__(self) -> String:
-        var string = 'State ID = ' + str(self.id)
-        for arc in self.arcs:
-            string += '\n' + str(arc[])
-        
+        var string = 'state id = ' + str(self.id)
         if self.is_final():
-            string += '\n' + str(self.final_weight)
+            string += ' [' + str(self.final_weight.value) + ']'
+
+        for arc in self.arcs:
+            string += '\n' + str(self.id) + ' ' + str(arc[])
         
         return string
     
@@ -137,18 +139,15 @@ struct Fst:
         self.states = List[State]()
 
     fn __str__(self) -> String:
-        var string = String()
+        var string = 'start = ' + str(self.start.id)
         for state_ref in self.states:
             var state = state_ref[]
             for arc_ref in state.arcs:
                 arc = arc_ref[]
-                string += str(state.id) + ' ' + str(arc.nextstate) + ' ' +
-                          str(arc.ilabel) + ' ' + str(arc.olabel) + ' ' +
-                          str(arc.weight.value) + '\n'
+                string += '\n' + str(state.id) + ' ' + str(arc)
             
             if state.is_final():
-                string += str(state.id) + ' ' + str(state.final_weight.value) + '\n'
-
+                string += '\n' + str(state.id) + ' [' + str(state.final_weight.value) + ']'
         return string
 
     # TODO: This is a good place to really learn about the ownership model
@@ -156,9 +155,10 @@ struct Fst:
     # What happens when I call "add_arc"... do I need to explicitly transfer
     # ownership of "arc" here?
     fn add_arc(inout self, state_id: StateId, owned arc: Arc):
-        if state_id >= len(self.states):
+        if not self.has_state(state_id):
             # TODO: Implement better error handling
             print('State ID ' + str(state_id) + ' does not exist.')
+            return
         
         var state = self.states[state_id]
         state.add_arc(arc^)
@@ -173,6 +173,20 @@ struct Fst:
         for _ in range(n):
             _ = self.add_state()
     
+    fn has_state(self, id: StateId) -> Bool:       
+        return id < len(self.states)
+    
+    fn num_states(self) -> UInt:
+        return len(self.states)
+
+    fn set_final(inout self, id: StateId, owned weight: Weight):
+        if not self.has_state(id):
+            # TODO: Implement better error handling
+            print('State ID ' + str(id) + ' does not exist.')
+            return
+        
+        self.states[id].final_weight = weight
+    
 
 
 
@@ -183,8 +197,9 @@ fn main():
     var fst = Fst()
     fst.start = fst.add_state()
     fst.add_states(2)
-    fst.add_arc(0, Arc(99, 99, Weight(3.14), 1))
-    fst.add_arc(0, Arc(88, 88, Weight(1.23), 2))
+    fst.add_arc(0, Arc(99, 99, Weight(1.23), 1))
+    fst.add_arc(0, Arc(88, 88, Weight(4.56), 2))
+    fst.set_final(1, Weight(7.89))
+    fst.set_final(2, Weight(9.87))
     print(str(fst))
-
 
