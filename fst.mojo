@@ -43,7 +43,6 @@ struct Weight:
         return self.__str__()
 
 
-# TODO: Make sure we are using @value correctly here
 @value
 struct Arc:
     var ilabel: Int
@@ -78,7 +77,7 @@ struct State:
     var arcs: List[Arc]
     var final_weight: Weight
 
-    fn __init__(inout self, id: StateId):
+    fn __init__(inout self, owned id: StateId):
         self.id = id
         self.arcs = List[Arc]()
         # TODO: Implement kNoWeight or figure out how to use None here
@@ -127,8 +126,8 @@ struct State:
     fn num_arcs(self) -> UInt:
         return len(self.arcs)
 
-    
 
+    
 struct Fst:
     var start: State
     var states: List[State]
@@ -137,6 +136,14 @@ struct Fst:
         # TODO: Implement kNoState concept or figure out how to use None here
         self.start = State(0)
         self.states = List[State]()
+
+    fn __copyinit__(inout self, existing: Self):
+        self.start = existing.start
+        self.states = existing.states
+    
+    fn __moveinit__(inout self, owned existing: Self):
+        self.start = existing.start
+        self.states = existing.states^
 
     fn __str__(self) -> String:
         var string = 'start = ' + str(self.start.id)
@@ -190,9 +197,6 @@ struct Fst:
 
 
 
-
-
-
 fn main():
     var fst = Fst()
     fst.start = fst.add_state()
@@ -202,4 +206,3 @@ fn main():
     fst.set_final(1, Weight(7.89))
     fst.set_final(2, Weight(9.87))
     print(str(fst))
-
