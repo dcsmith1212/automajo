@@ -116,11 +116,14 @@ struct State:
         
         return string
     
-    fn add_arc(inout self, arc: Arc):
+    fn add_arc(inout self, owned arc: Arc):
         self.arcs.append(arc)
     
     fn is_final(self) -> Bool:
         return self.final_weight != Weight.zero()
+    
+    fn num_arcs(self) -> UInt:
+        return len(self.arcs)
 
     
 
@@ -134,7 +137,7 @@ struct Fst:
         self.states = List[State]()
 
     fn __str__(self) -> String:
-        string = String()
+        var string = String()
         for state_ref in self.states:
             var state = state_ref[]
             for arc_ref in state.arcs:
@@ -152,19 +155,19 @@ struct Fst:
     # Is "state" a separate copy of the object in the list "self.states"?
     # What happens when I call "add_arc"... do I need to explicitly transfer
     # ownership of "arc" here?
-    fn add_arc(inout self, state_id: StateId, arc: Arc):
+    fn add_arc(inout self, state_id: StateId, owned arc: Arc):
         if state_id >= len(self.states):
             # TODO: Implement better error handling
             print('State ID ' + str(state_id) + ' does not exist.')
         
         var state = self.states[state_id]
-        state.add_arc(arc)
+        state.add_arc(arc^)
+        self.states[state_id] = state
 
-    fn add_state(inout self) -> StateId:
-        var id = len(self.states)
-        var state = State(id)
+    fn add_state(inout self) -> State:
+        var state = State(id=len(self.states))
         self.states.append(state)
-        return id
+        return state
     
     fn add_states(inout self, n: UInt):
         for _ in range(n):
@@ -173,21 +176,15 @@ struct Fst:
 
 
 
-fn main():
-    var arc1 = Arc(0, 1, Weight(3.14), 2)
-    var arc2 = Arc(3, 2, Weight(1.23), 0)
-    var s = State(0)
-    s.add_arc(arc1)
-    s.add_arc(arc2)
-    s.final_weight = Weight(9.999)
 
+
+
+fn main():
     var fst = Fst()
     fst.start = fst.add_state()
-    fst.add_states(1)
+    fst.add_states(2)
+    fst.add_arc(0, Arc(99, 99, Weight(3.14), 1))
+    fst.add_arc(0, Arc(88, 88, Weight(1.23), 2))
+    print(str(fst))
 
 
-
-    var arc = Arc(99, 99, Weight(3.14), 1)
-    fst.add_arc(0, arc)
-
-    print(str(fst.states[0]))
