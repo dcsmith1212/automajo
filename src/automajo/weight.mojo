@@ -1,3 +1,38 @@
+from utils.numerics import max_finite
+
+
+trait Semiring:
+    # Additive identity
+    @staticmethod
+    fn zero() -> Self: ...
+
+    # Multiplicative identity
+    @staticmethod
+    fn one() -> Self: ...
+
+    fn __add__(self, other: Self) -> Self: ...
+    fn __mul__(self, other: Self) -> Self: ...
+
+
+@value
+struct TropicalWeight(Semiring):
+    var value: Float64
+
+    @staticmethod
+    fn zero() -> Self:
+        return Self(max_finite[DType.float64]()) # TODO: Is there a representation of infinity?
+    
+    @staticmethod
+    fn one() -> Self:
+        return Self(1.0)
+
+    fn __add__(self, other: Self) -> Self:
+        return Self(min(self.value, other.value))
+
+    fn __mul__(self, other: Self) -> Self:
+        return Self(self.value + other.value)
+
+
 @value
 struct Weight:
     var value: Float64
