@@ -22,6 +22,6 @@ struct Arc:
         return '--- ' + str(self.ilabel) + ':' + str(self.olabel) + 
                ' [' + str(self.weight.value) + '] ---> ' + str(self.nextstate)
     
-    fn __repr__(self) -> String:
+    fn __repr__(self)-> String:
         return self.__str__()
     
